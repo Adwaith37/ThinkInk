@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ThinkInk</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen">
+    <div id="login-box">
+        <h2>🧠 ThinkInk ✒️</h2>
+        <p>AI that thinks before it writes</p>
+
+        <!-- Tab Switcher -->
+        <div id="auth-tabs">
+            <button class="auth-tab active" onclick="switchTab('signin')" id="signin-tab">Sign In</button>
+            <button class="auth-tab" onclick="switchTab('signup')" id="signup-tab">Sign Up</button>
+        </div>
+
+        <!-- Sign In Form -->
+        <div id="signin-form">
+            <input id="signin-username" placeholder="Your username..." />
+            <input id="signin-pin" placeholder="4-digit PIN..." type="password" maxlength="4" />
+            <button type="button" onclick="signIn()">Sign In</button>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div id="signup-form" style="display:none;">
+            <input id="signup-username" placeholder="Choose a username..." />
+            <input id="signup-pin" placeholder="Choose a 4-digit PIN..." type="password" maxlength="4" />
+            <input id="signup-pin-confirm" placeholder="Confirm PIN..." type="password" maxlength="4" />
+            <div id="groq-key-section">
+                <div id="groq-toggle" onclick="toggleGroqKey()">
+                    ⚡ Have a Groq API key? Use unlimited version →
+                </div>
+                <div id="groq-key-input-wrapper" style="display:none;">
+                    <input id="groq-key-input" placeholder="Enter your Groq API key (gsk_...)" type="password"/>
+                    <a href="https://console.groq.com" target="_blank">Get your free key here → Takes 2 minutes</a>
+                </div>
+            </div>
+            <button type="button" onclick="signUp()">Create Account</button>
+        </div>
+
+        <p id="login-hint"></p>
+    </div>
+</div>
+
+<!-- Main App -->
+<div id="app" style="display:none; width:100%; height:100vh; flex-direction:row;">
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div id="sidebar-header">
+            <span id="user-label">👤</span>
+            <button id="logout-btn" type="button" onclick="logout()">Logout</button>
+        </div>
+        <span id="remaining-label">📊 Loading...</span>
+        <button id="new-chat-btn" type="button" onclick="startNewChat()">+ New Chat</button>
+        <div id="history"></div>
+        <div id="groq-key-status" onclick="toggleAddKeyPanel()">
+    ⚡ Add Groq key for unlimited
+        </div>
+
+        <div id="add-key-panel" style="display:none;">
+            <input id="add-key-input" placeholder="gsk_..." type="password" />
+            <div id="add-key-actions">
+                <button type="button" onclick="saveGroqKeyFromSidebar()">Save</button>
+                <button type="button" onclick="toggleAddKeyPanel()">Cancel</button>
+    </div>
+    <a href="https://console.groq.com" target="_blank">Get a free key →</a>
+</div>
+    </div>
+
+
+
+    <!-- Main Section -->
+    <div id="main">
+        <header id="header">🧠 ThinkInk ✒️</header>
+
+        <!-- Chat Area -->
+        <div id="chat"></div>
+
+        <!-- Experience Panel (hidden by default, inside main) -->
+        <div id="experience-panel">
+            <div id="experience-header">
+                <span>✍️ Your Personal Experience</span>
+                <button type="button" onclick="toggleExperience()" id="close-experience">✕</button>
+            </div>
+            <p id="experience-hint">Share your personal experience, memories, or insights. The AI will weave them into your blog to make it authentic and unique.</p>
+            <textarea id="experience-input" placeholder="Example: I visited Paris last summer and the Eiffel Tower at night was breathtaking. The cafes near Montmartre had the best croissants I've ever tasted..."></textarea>
+            <div id="experience-actions">
+                <span id="experience-status">No experience added</span>
+                <button type="button" id="save-experience-btn" onclick="saveExperience()">Add to Blog ✓</button>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div id="input-area">
+            <button id="experience-btn" type="button" onclick="toggleExperience()" title="Add your personal experience">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </button>
+            <textarea id="input" placeholder="Type your topic or instruction... (Shift+Enter for new line)" rows="1"></textarea>
+            <button id="send-btn" type="button" onclick="send(event)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="19" x2="12" y2="5"/>
+                    <polyline points="5 12 12 5 19 12"/>
+                </svg>
+            </button>
+            <button id="accept-btn" type="button" onclick="accept(event)">✓ Accept</button>
+        </div>
+
+    </div>
+</div>
+
+<script src="/static/style.js" defer></script>
+</body>
+</html>
