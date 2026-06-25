@@ -637,3 +637,18 @@ function toggleGroqKey() {
         userGroqKey = "";
     }
 }
+
+
+// ✅ Toggle sidebar on mobile
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("open");
+}
+
+// ✅ Close sidebar when a chat is selected on mobile
+// Add this line inside switchChat() after element.classList.add("active"):
+document.getElementById("sidebar").classList.remove("open");
+
+// ✅ Close sidebar when new chat starts on mobile
+// Add this line inside startNewChat():
+document.getElementById("sidebar").classList.remove("open");
