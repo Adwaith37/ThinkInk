@@ -141,7 +141,7 @@ Users can add their own memories or experiences before generating. The system tr
 
 ## Demo
 
-**Live Application:** 
+**Live Application:**  https://thinkink-idr6.onrender.com/app
 
 To try it:
 1. Sign up with a username and a 4-digit PIN
