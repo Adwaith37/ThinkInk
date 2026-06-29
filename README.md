@@ -12,8 +12,7 @@
 ---
 
 ## Screenshot
-
-
+<img width="1912" height="880" alt="image" src="https://github.com/user-attachments/assets/1a556ae5-9ed9-4123-9ccb-0035f1504a2e" />
 
 ---
 
