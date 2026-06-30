@@ -24,6 +24,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+# ── Centralized model name ───────────────────────
+# Groq periodically deprecates models. When that happens, this is the
+# only line that needs to change — every call site below reads from here.
+GROQ_MODEL = "openai/gpt-oss-120b"
+
 MAX_REQUESTS_PER_USER_PER_DAY = 10
 STYLES = ["storytelling", "analytical", "listicle", "opinion"]
 
@@ -157,9 +163,11 @@ Examples of follow-up instructions (A):
 Examples of new topic requests (B):
 - "write about climate change", "quantum computing"
 - "best travel destinations in 2026", "how does blockchain work"
+- "fifa world cup", "artificial intelligence", "manali trip"
+- "AIFF", "bitcoin", "mental health"
 - Any proper noun, place name, organization name, or topic that is unrelated to editing
 
-KEY RULE: If the input looks like a topic, subject, place, organization, person, or event 
+KEY RULE: If the input looks like a topic, subject, place, organization, person, or event
 rather than an editing instruction, classify it as B even if it is short.
 Short inputs are NOT automatically follow-up instructions.
 
@@ -167,12 +175,12 @@ Respond with ONLY one word: A or B"""
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": classify_prompt}],
             max_tokens=5
         )
         result = response.choices[0].message.content.strip().upper()
-        print(f" Classification: '{instruction}' → {result}")
+        print(f"🤖 Classification: '{instruction}' → {result}")
         return result == "A"
     except Exception as e:
         print(f"Classifier error: {e}")
@@ -197,13 +205,13 @@ Respond with ONLY the category word, nothing else."""
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": classify_prompt}],
             max_tokens=5
         )
         result = response.choices[0].message.content.strip().lower()
         if result in CATEGORIES:
-            print(f" Category detected: {result}")
+            print(f"🏷️ Category detected: {result}")
             return result
         return "opinion"
     except Exception as e:
@@ -228,13 +236,13 @@ Respond with ONLY the style word, nothing else."""
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=GROQ_MODEL,
             messages=[{"role": "user", "content": classify_prompt}],
             max_tokens=5
         )
         result = response.choices[0].message.content.strip().lower()
         if result in STYLES:
-            print(f" Style detected: {result}")
+            print(f"🎨 Style detected: {result}")
             return result
         return "analytical"
     except Exception as e:
@@ -329,10 +337,10 @@ def generate_blog(request: BlogRequest):
             raise HTTPException(
                 status_code=429,
                 detail=f"You've reached your daily limit of {MAX_REQUESTS_PER_USER_PER_DAY} blogs. "
-                       f"Come back tomorrow or add your free Groq key for unlimited access! "
+                       f"Come back tomorrow or add your free Groq key for unlimited access! 🌅"
             )
     else:
-        print(f" Using user's own Groq key — no rate limit")
+        print(f"⚡ Using user's own Groq key — no rate limit")
 
     user_data = load_user(request.user_id)
     previous_blog = get_current_blog(request.user_id)
@@ -351,21 +359,20 @@ def generate_blog(request: BlogRequest):
     if not rag_examples:
         rag_examples = user_data.get("examples", [])
 
-    # Trim examples to prevent prompt bloat
-    if rag_examples:
-        rag_examples = [ex[:500] for ex in rag_examples]
+    # ── Trim examples to prevent prompt token bloat
+    rag_examples = [ex[:500] for ex in rag_examples]
 
     preferences = get_preferences(request.user_id)
     preferences_text = format_preferences_for_prompt(preferences)
     if preferences_text:
-        print(f" Using preferences: {preferences.get('preferred_tone', 'default')}")
+        print(f"🎯 Using preferences: {preferences.get('preferred_tone', 'default')}")
 
     search_context = ""
     if should_search(request.topic, request.instruction, previous_blog, active_api_key):
-        print(f" Searching web for: {request.topic}")
+        print(f"🔍 Searching web for: {request.topic}")
         search_context = search_topic(request.topic)
     else:
-        print(f"Skipping search — refinement mode")
+        print(f"⏭️ Skipping search — refinement mode")
 
     prompt = build_prompt(
         topic=request.topic,
@@ -384,26 +391,27 @@ def generate_blog(request: BlogRequest):
 
     def stream_blog():
         try:
-            print(" Generating initial blog...")
+            print("✍️ Generating initial blog...")
             initial_response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=GROQ_MODEL,
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=3000
+                max_tokens=2200
             )
             initial_blog = initial_response.choices[0].message.content.strip()
 
             if should_evaluate and (not previous_blog or not request.instruction):
-                print(" Running evaluation pipeline...")
+                print("🔍 Running evaluation pipeline...")
                 final_blog, scores = run_evaluation_pipeline(
-                blog=initial_blog,
-                topic=request.topic,
-                search_context=search_context,
-                api_key=active_api_key,
-                max_revisions=2,
-                has_personal_experience=bool(request.personal_experience),
-                personal_experience=request.personal_experience,
-                blog_category=category or "general",
-                preferences_text=preferences_text  
+                    blog=initial_blog,
+                    topic=request.topic,
+                    search_context=search_context,
+                    api_key=active_api_key,
+                    model=GROQ_MODEL,
+                    max_revisions=2,
+                    has_personal_experience=bool(request.personal_experience),
+                    personal_experience=request.personal_experience,
+                    blog_category=category or "general",
+                    preferences_text=preferences_text
                 )
                 primary = scores.get("primary_dimension", {})
                 readability = scores.get("readability", {}).get("score", 0)
@@ -414,14 +422,14 @@ def generate_blog(request: BlogRequest):
                 primary_name = primary.get("name", "quality").upper()
                 primary_score = primary.get("score", 0)
                 score_badge = (f"\n\n---\n✨ **AI Evaluated** · {primary_name} {primary_score}/10 · "
-                                f"Readability {readability}/10 · Structure {structure}/10 · "
-                                f"Engagement {engagement}/10 · Factual {factual}/10 · "
-                                f"Overall {overall}/10")
+                               f"Readability {readability}/10 · Structure {structure}/10 · "
+                               f"Engagement {engagement}/10 · Factual {factual}/10 · "
+                               f"Overall {overall}/10")
             else:
                 final_blog = initial_blog
                 score_badge = ""
                 if not should_evaluate:
-                    print(" Skipping evaluation — new user, saving tokens")
+                    print("⏭️ Skipping evaluation — new user, saving tokens")
 
             for char in final_blog:
                 yield f"data: {json.dumps({'token': char})}\n\n"
@@ -431,7 +439,7 @@ def generate_blog(request: BlogRequest):
                     yield f"data: {json.dumps({'token': char})}\n\n"
 
             remaining = get_remaining_requests(request.user_id)
-            remaining_msg = f"\n\n* {remaining} generations remaining today*"
+            remaining_msg = f"\n\n*📊 {remaining} generations remaining today*"
             for char in remaining_msg:
                 yield f"data: {json.dumps({'token': char})}\n\n"
 
@@ -465,12 +473,12 @@ def accept_blog(request: BlogRequest):
         add_example(request.user_id, blog, category=category,
                     style=style, has_personal_voice=has_voice)
 
-        print(" Extracting preferences from accepted blog...")
+        print("🧠 Extracting preferences from accepted blog...")
         new_prefs = extract_preferences(blog, active_api_key)
         if new_prefs:
             existing_prefs = get_preferences(request.user_id)
             merged = merge_preferences(existing_prefs, new_prefs)
             save_preferences(request.user_id, merged)
-            print(f" Preferences updated: {merged.get('preferred_tone', 'unknown')} tone")
+            print(f"✅ Preferences updated: {merged.get('preferred_tone', 'unknown')} tone")
 
     return {"status": "saved"}

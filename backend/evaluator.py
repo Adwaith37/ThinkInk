@@ -3,7 +3,8 @@ import json
 
 
 def evaluate_blog(blog: str, topic: str, search_context: str,
-                  api_key: str, has_personal_experience: bool = False,
+                  api_key: str, model: str = "openai/gpt-oss-120b",
+                  has_personal_experience: bool = False,
                   blog_category: str = "general",
                   preferences_text: str = "") -> dict:
     """Evaluate blog quality across 8 dimensions, accounting for blog type and user preferences."""
@@ -123,7 +124,7 @@ Return ONLY the JSON object, no preamble, no explanation, no markdown fences."""
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=model,
             messages=[{"role": "user", "content": eval_prompt}],
             max_tokens=1100
         )
@@ -153,6 +154,7 @@ Return ONLY the JSON object, no preamble, no explanation, no markdown fences."""
 
 def revise_blog(blog: str, topic: str, revision_instruction: str,
                 dimension_to_fix: str, search_context: str, api_key: str,
+                model: str = "openai/gpt-oss-120b",
                 has_personal_experience: bool = False,
                 personal_experience: str = "") -> str:
     """Revise blog targeting one specific dimension based on evaluator feedback."""
@@ -211,7 +213,7 @@ Begin the revised blog now:"""
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=model,
             messages=[{"role": "user", "content": revise_prompt}],
             max_tokens=2000
         )
@@ -223,7 +225,8 @@ Begin the revised blog now:"""
 
 
 def run_evaluation_pipeline(blog: str, topic: str, search_context: str,
-                             api_key: str, max_revisions: int = 2,
+                             api_key: str, model: str = "openai/gpt-oss-120b",
+                             max_revisions: int = 2,
                              has_personal_experience: bool = False,
                              personal_experience: str = "",
                              blog_category: str = "general",
@@ -247,6 +250,7 @@ def run_evaluation_pipeline(blog: str, topic: str, search_context: str,
             topic=topic,
             search_context=search_context,
             api_key=api_key,
+            model=model,
             has_personal_experience=has_personal_experience,
             blog_category=blog_category,
             preferences_text=preferences_text
@@ -270,6 +274,7 @@ def run_evaluation_pipeline(blog: str, topic: str, search_context: str,
             dimension_to_fix=scores.get("dimension_to_fix", "tone"),
             search_context=search_context,
             api_key=api_key,
+            model=model,
             has_personal_experience=has_personal_experience,
             personal_experience=personal_experience
         )

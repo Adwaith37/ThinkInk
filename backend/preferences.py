@@ -1,7 +1,7 @@
 from groq import Groq
 import json
 
-def extract_preferences(blog: str, api_key: str) -> dict:
+def extract_preferences(blog: str, api_key: str, model: str = "openai/gpt-oss-120b") -> dict:
     """Silently extract writing preferences from an accepted blog"""
     
     client = Groq(api_key=api_key)
@@ -34,7 +34,7 @@ Return ONLY the JSON, no explanation, no preamble."""
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model= model,
             messages=[{"role": "user", "content": extract_prompt}],
             max_tokens=500
         )
