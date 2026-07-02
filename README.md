@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-green)
-![Groq](https://img.shields.io/badge/LLM-Llama%203.3%2070B-orange)
+![Groq](https://img.shields.io/badge/LLM-OpenAI%20GPT--OSS%20120B-orange)
 ![Pinecone](https://img.shields.io/badge/Vector%20DB-Pinecone-purple)
 ![Supabase](https://img.shields.io/badge/Database-Supabase-darkgreen)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
@@ -128,7 +128,7 @@ Users can add their own memories or experiences before generating. The system tr
 | Layer | Technology | Why |
 |---|---|---|
 | Backend | FastAPI | Async support, streaming responses, clean API design |
-| LLM | Groq (Llama 3.3 70B) | Fast inference, generous free tier |
+| LLM | Groq (OpenAI GPT-OSS-120B) | Fast inference, generous free tier |
 | Vector Database | Pinecone | Scalable semantic search with metadata filtering |
 | Database | Supabase (PostgreSQL) | Hosted Postgres for users, chats, rate limits, cache |
 | Embeddings | sentence-transformers | Local embeddings, no extra API cost |
